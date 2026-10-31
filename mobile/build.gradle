@@ -1,0 +1,5 @@
+// Корневой файл проекта: версии плагинов задаются здесь,
+// чтобы модуль app оставался простым
+plugins {
+    id 'com.android.application' version '9.3.1' apply false
+}

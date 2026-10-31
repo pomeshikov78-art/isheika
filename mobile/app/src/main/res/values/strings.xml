@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Ищейка</string>
+    <string name="server_hint">Адрес сервера, например http://192.168.1.10:8123</string>
+    <string name="connect">Подключиться</string>
+    <string name="settings">Сменить сервер</string>
+    <string name="no_server">Укажите адрес сервера «Ищейки»</string>
+    <string name="error_connect">Не удалось подключиться к серверу. Проверьте адрес и то, что сервер запущен.</string>
+    <string name="retry">Повторить</string>
+</resources>

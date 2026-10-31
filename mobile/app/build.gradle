@@ -1,0 +1,37 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'ru.amgbs.sleuth'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId "ru.amgbs.sleuth"
+        // 24 - Android 7.0: покрывает практически весь парк устройств
+        minSdk 24
+        targetSdk 35
+        versionCode 1
+        versionName "0.1.0"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            // Отладочная подпись: приложение распространяется внутри компании,
+            // а не через магазин. Для публикации в Google Play нужен свой
+            // ключ подписи - см. docs/УСТАНОВКА.md
+            signingConfig signingConfigs.debug
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'androidx.webkit:webkit:1.12.1'
+}

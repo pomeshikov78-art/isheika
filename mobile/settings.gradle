@@ -1,0 +1,18 @@
+pluginManagement {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+dependencyResolutionManagement {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+// Имя проекта попадает в пути артефактов сборки, поэтому только латиница:
+// на кириллице инструменты Android падают с «Invalid file path».
+// Название, которое видит пользователь, задаётся в res/values/strings.xml
+rootProject.name = "sleuth"
+include(":app")

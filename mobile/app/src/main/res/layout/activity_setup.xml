@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="28dp"
+    android:background="#F4F6F9">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/app_name"
+        android:textSize="30sp"
+        android:textStyle="bold"
+        android:textColor="#1F4E79"
+        android:letterSpacing="0.08" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="мультиагентная система анализа"
+        android:textSize="13sp"
+        android:textColor="#667"
+        android:layout_marginBottom="28dp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/no_server"
+        android:textSize="14sp"
+        android:textColor="#333"
+        android:layout_marginBottom="8dp" />
+
+    <EditText
+        android:id="@+id/serverUrl"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/server_hint"
+        android:inputType="textUri"
+        android:background="#FFFFFF"
+        android:padding="14dp"
+        android:textSize="15sp"
+        android:autofillHints="" />
+
+    <Button
+        android:id="@+id/connectButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/connect"
+        android:layout_marginTop="18dp"
+        android:backgroundTint="#1F4E79"
+        android:textColor="#FFFFFF" />
+
+    <TextView
+        android:id="@+id/errorText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="#C62828"
+        android:textSize="13sp"
+        android:layout_marginTop="14dp"
+        android:visibility="gone" />
+</LinearLayout>
