@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Ищейка — отчёт: {{ report.query|truncate(80) }}</title>
+<style>
+  body { font-family: "DejaVu Sans", Arial, sans-serif; color: #1a1a1a; margin: 32px; line-height: 1.5; }
+  h1 { font-size: 20pt; border-bottom: 3px solid #1f4e79; padding-bottom: 8px; color: #1f4e79; }
+  h2 { font-size: 15pt; color: #1f4e79; margin-top: 28px; border-left: 4px solid #1f4e79; padding-left: 10px; }
+  h3 { font-size: 12pt; color: #333; margin-top: 18px; }
+  .meta { color: #666; font-size: 9pt; margin-bottom: 20px; }
+  .summary { background: #eef4fa; border-left: 4px solid #1f4e79; padding: 14px 18px; margin: 16px 0; }
+  table { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 9.5pt; }
+  th, td { border: 1px solid #c8d4e0; padding: 6px 9px; text-align: left; vertical-align: top; }
+  th { background: #1f4e79; color: #fff; font-weight: 600; }
+  tr:nth-child(even) td { background: #f6f9fc; }
+  .conf-bar { background: #e6e6e6; height: 22px; width: 100%; border-radius: 3px; overflow: hidden; }
+  .conf-fill { height: 22px; color: #fff; text-align: center; font-size: 10pt; line-height: 22px; }
+  .high { background: #2e7d32; } .medium { background: #f9a825; } .low { background: #c62828; }
+  ul { margin: 6px 0 6px 18px; padding: 0; }
+  li { margin-bottom: 4px; }
+  .chart { margin: 14px 0; text-align: center; }
+  .chart img { max-width: 100%; }
+  .sev-critical, .sev-high { color: #c62828; font-weight: bold; }
+  .sev-significant { color: #ef6c00; font-weight: bold; }
+  .warn { background: #fff4e5; border-left: 4px solid #ef6c00; padding: 10px 14px; margin: 12px 0; font-size: 10pt; }
+  .src { font-size: 8.5pt; word-break: break-all; }
+  .demo { background:#fdecea; border:2px solid #c62828; color:#7f1d1d; padding:12px 16px;
+           margin:14px 0; border-radius:4px; font-size:10pt; }
+  footer { margin-top: 36px; border-top: 1px solid #ccc; padding-top: 10px; color: #777; font-size: 8.5pt; }
+</style>
+</head>
+<body>
+
+<h1>Аналитический отчёт «Ищейка»</h1>
+
+{% if report.demo_mode %}
+<div class="demo">
+  <b>ДЕМОНСТРАЦИОННЫЙ РЕЖИМ.</b> LLM-провайдер не настроен (<code>LLM_PROVIDER=mock</code>),
+  поэтому аналитические разделы заполнены данными заглушки и помечены префиксом «ДЕМО».
+  Реальны только собранные источники и все расчёты, выполняемые кодом.
+  Числа из этого отчёта нельзя использовать для принятия решений.
+</div>
+{% endif %}
+<div class="meta">
+  Миссия: {{ report.mission_id }} &nbsp;|&nbsp; Режим: {{ report.mode }} &nbsp;|&nbsp;
+  Создан: {{ generated_at }} &nbsp;|&nbsp; Агентов задействовано: {{ report.agents_used|length }}
+  ({{ report.agents_used|join(', ') }})
+</div>
+
+<h2>Запрос</h2>
+<p>{{ report.query }}</p>
+
+<h2>1. Резюме</h2>
+<div class="summary">{{ report.summary }}</div>
+
+{% if report.key_findings %}
+<h3>Ключевые выводы</h3>
+<ul>{% for f in report.key_findings %}<li>{{ f }}</li>{% endfor %}</ul>
+{% endif %}
+
+<h2>2. Детальный анализ</h2>
+
+<h3>2.1. Технологическая оценка</h3>
+<table>
+  <tr><th style="width:30%">Показатель</th><th>Значение</th></tr>
+  <tr><td>Объект</td><td>{{ report.technology.name }}</td></tr>
+  <tr><td>TRL (1–9)</td><td>{{ report.technology.trl if report.technology.trl else 'не определён' }}</td></tr>
+  <tr><td>Обоснование TRL</td><td>{{ report.technology.trl_rationale or '—' }}</td></tr>
+  <tr><td>Вывод</td><td>{{ report.technology.verdict or '—' }}</td></tr>
+</table>
+
+{% if report.technology.characteristics %}
+<table>
+  <tr><th>Характеристика</th><th>Значение</th><th>Сравнение с аналогами</th></tr>
+  {% for c in report.technology.characteristics %}
+  <tr><td>{{ c.name }}</td><td>{{ c.value }}</td><td>{{ c.comparison }}</td></tr>
+  {% endfor %}
+</table>
+{% endif %}
+
+{% if report.analysis.detailed %}
+<h3>2.2. Развёрнутый анализ</h3>
+<p>{{ report.analysis.detailed }}</p>
+{% endif %}
+
+{% if report.analysis.market %}
+<h3>2.3. Рынок</h3>
+<table>
+  {% for key, value in report.analysis.market.items() %}
+  <tr><td style="width:30%">{{ market_labels.get(key, key) }}</td>
+      <td>{% if value is iterable and value is not string %}{{ value|join(', ') }}{% else %}{{ value if value is not none else '—' }}{% endif %}</td></tr>
+  {% endfor %}
+</table>
+{% endif %}
+
+{% if report.analysis.patents %}
+<h3>2.4. Патентный ландшафт</h3>
+<table>
+  <tr><td style="width:30%">Найдено патентных документов</td><td>{{ report.analysis.patents.patents_found or 0 }}</td></tr>
+  <tr><td>Ключевые правообладатели</td><td>{{ (report.analysis.patents.key_holders or [])|join(', ') or '—' }}</td></tr>
+  <tr><td>Динамика активности</td><td>{{ report.analysis.patents.activity_trend or '—' }}</td></tr>
+  <tr><td>Оценка уникальности</td><td>{{ report.analysis.patents.uniqueness if report.analysis.patents.uniqueness is not none else '—' }}</td></tr>
+</table>
+{% endif %}
+
+{% if report.analysis.comparison %}
+<h3>2.5. Сравнительный бенчмаркинг</h3>
+<table>
+  <tr><th>Решение</th>{% for c in report.analysis.comparison_criteria %}<th>{{ c }}</th>{% endfor %}<th>Итого</th></tr>
+  {% for alt in report.analysis.comparison %}
+  <tr><td>{{ alt.name }}</td>
+      {% for c in report.analysis.comparison_criteria %}<td>{{ alt.scores.get(c, '—') }}</td>{% endfor %}
+      <td><b>{{ alt.total }}</b></td></tr>
+  {% endfor %}
+</table>
+{% endif %}
+
+<h2>3. Прогноз</h2>
+{% if forecast_chart %}
+<div class="chart"><img src="{{ forecast_chart }}" alt="Прогноз"></div>
+{% endif %}
+
+{% if report.forecast.scenarios %}
+<table>
+  <tr><th>Горизонт</th><th>Год</th><th>Сценарий</th><th>Значение</th><th>Вероятность</th><th>Интервал</th></tr>
+  {% for s in report.forecast.scenarios %}
+  <tr>
+    <td>{{ s.horizon }} лет</td><td>{{ s.year }}</td>
+    <td>{{ scenario_labels.get(s.scenario, s.scenario) }}</td>
+    <td>{{ "%.1f"|format(s.value) }}</td>
+    <td>{{ (s.probability * 100)|round(0)|int if s.probability else '—' }}%</td>
+    <td>{{ "%.1f"|format(s.confidence_interval.lower) }} … {{ "%.1f"|format(s.confidence_interval.upper) }}</td>
+  </tr>
+  {% endfor %}
+</table>
+{% if report.forecast.fit %}
+<p style="font-size:9pt;color:#555">
+  Модель: {{ report.forecast.fit.method }}, R² = {{ report.forecast.fit.r2 }},
+  потолок насыщения K = {{ "%.0f"|format(report.forecast.fit.K) }}{% if report.forecast.fit.inflection_year %}, точка перегиба — {{ "%.0f"|format(report.forecast.fit.inflection_year) }} г.{% endif %}
+  Метрика: {{ report.forecast.metric or 'не указана' }}.
+  {% if report.forecast.series_source %}Источник временного ряда: {{ report.forecast.series_source }}.{% endif %}
+</p>
+{% endif %}
+{% else %}
+<div class="warn">Количественный прогноз не построен: во найденных источниках не набралось
+временного ряда достаточной длины (нужно не менее 3 точек).</div>
+{% endif %}
+
+{% if report.forecast.drivers or report.forecast.barriers %}
+<table>
+  <tr><th style="width:50%">Драйверы роста</th><th>Барьеры</th></tr>
+  <tr>
+    <td><ul>{% for d in report.forecast.drivers %}<li>{{ d }}</li>{% endfor %}</ul></td>
+    <td><ul>{% for b in report.forecast.barriers %}<li>{{ b }}</li>{% endfor %}</ul></td>
+  </tr>
+</table>
+{% endif %}
+
+<h2>4. Риски</h2>
+{% if risk_chart %}
+<div class="chart"><img src="{{ risk_chart }}" alt="Матрица рисков"></div>
+{% endif %}
+
+{% if report.risks %}
+<table>
+  <tr><th>Тип</th><th>Риск</th><th>Вер.</th><th>Влияние</th><th>Экспозиция</th><th>Уровень</th><th>Меры снижения</th></tr>
+  {% for r in report.risks %}
+  <tr>
+    <td>{{ r.type_ru or r.type }}</td>
+    <td>{{ r.title }}</td>
+    <td>{{ r.probability }}</td>
+    <td>{{ r.impact }}</td>
+    <td>{{ r.exposure }}</td>
+    <td class="sev-{{ severity_classes.get(r.severity, "moderate") }}">{{ r.severity }}</td>
+    <td>{{ r.mitigation or '—' }}</td>
+  </tr>
+  {% endfor %}
+</table>
+{% else %}
+<p>Риски не выявлены.</p>
+{% endif %}
+
+{% if report.recommendations %}
+<h2>5. Рекомендации</h2>
+<table>
+  <tr><th style="width:12%">Приоритет</th><th>Рекомендация</th><th>Обоснование</th></tr>
+  {% for rec in report.recommendations %}
+  <tr><td>{{ priority_labels.get(rec.priority, rec.priority) }}</td>
+      <td>{{ rec.text }}</td><td>{{ rec.rationale or '—' }}</td></tr>
+  {% endfor %}
+</table>
+{% endif %}
+
+<h2>6. Достоверность</h2>
+<div class="conf-bar">
+  <div class="conf-fill {{ conf_class }}" style="width: {{ (report.confidence * 100)|round(0)|int }}%">
+    {{ (report.confidence * 100)|round(1) }}% — {{ conf_label }}
+  </div>
+</div>
+
+{% if report.confidence_details.factors %}
+<table>
+  <tr><th>Фактор уверенности</th><th>Значение</th></tr>
+  {% for key, value in report.confidence_details.factors.items() %}
+  <tr><td>{{ factor_labels.get(key, key) }}</td><td>{{ (value * 100)|round(0)|int }}%</td></tr>
+  {% endfor %}
+</table>
+{% endif %}
+
+{% if report.confidence_details.explanation %}
+<ul>{% for note in report.confidence_details.explanation %}<li>{{ note }}</li>{% endfor %}</ul>
+{% endif %}
+
+{% if report.criticism.issues %}
+<h3>Замечания критика (W09)</h3>
+<ul>{% for i in report.criticism.issues %}<li><b>[{{ i.severity }}]</b> {{ i.text }}</li>{% endfor %}</ul>
+{% endif %}
+
+{% if report.criticism.counterarguments %}
+<h3>Контраргументы Red Team (W10)</h3>
+<ul>{% for c in report.criticism.counterarguments %}<li>(сила {{ c.strength }}) {{ c.text }}</li>{% endfor %}</ul>
+{% endif %}
+
+{% if report.conflicts_resolution %}
+<h3>Разрешение противоречий (W12)</h3>
+<table>
+  <tr><th style="width:45%">Противоречие</th><th>Разрешение</th></tr>
+  {% for c in report.conflicts_resolution %}
+  <tr><td>{{ c.conflict }}</td><td>{{ c.resolution }}</td></tr>
+  {% endfor %}
+</table>
+{% endif %}
+
+{% if report.unresolved_issues %}
+<h3>Нерешённые вопросы</h3>
+<ul>{% for u in report.unresolved_issues %}<li>{{ u }}</li>{% endfor %}</ul>
+{% endif %}
+
+<h2>7. Источники ({{ report.sources|length }})</h2>
+<table>
+  <tr><th style="width:4%">№</th><th>Источник</th><th style="width:12%">Дата</th><th style="width:12%">Надёжность</th></tr>
+  {% for s in report.sources %}
+  <tr>
+    <td>{{ loop.index }}</td>
+    <td>{{ s.title or 'без заголовка' }}<br><span class="src">{{ s.url }}</span></td>
+    <td>{{ s.published_at or '—' }}</td>
+    <td>{{ '%.2f'|format(s.reliability if s.reliability is defined and s.reliability else (s.authority or 0.5)) }}</td>
+  </tr>
+  {% endfor %}
+</table>
+
+<footer>
+  Отчёт сформирован системой «Ищейка» (Sleuth) — мультиагентная платформа анализа,
+  прогнозирования и риск-оценки. Все выводы носят аналитический характер и требуют
+  экспертной верификации перед принятием решений.
+</footer>
+
+</body>
+</html>

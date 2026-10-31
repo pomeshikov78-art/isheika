@@ -1,0 +1,38 @@
+# --- ядро ---
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+pydantic==2.10.4
+pydantic-settings==2.7.0
+python-multipart==0.0.20
+
+# --- база данных ---
+SQLAlchemy==2.0.36
+aiosqlite==0.20.0          # MVP-хранилище по умолчанию
+asyncpg==0.30.0            # PostgreSQL (production)
+greenlet==3.1.1
+
+# --- безопасность ---
+PyJWT==2.10.1
+bcrypt==4.2.1
+
+# --- HTTP / интеграции ---
+httpx==0.28.1
+
+# --- LLM-провайдеры (опционально, ставится по потребности) ---
+anthropic==0.42.0          # провайдер Claude
+
+# --- аналитика ---
+numpy==2.2.1
+
+# --- отчёты ---
+Jinja2==3.1.5
+python-docx==1.1.2
+reportlab==4.2.5           # запасной рендеринг PDF, когда в системе нет браузера
+matplotlib==3.10.0         # графики трендов и матрица рисков
+
+# --- документы пользователя ---
+PyMuPDF==1.25.1
+
+# --- тесты ---
+pytest==8.3.4
+pytest-asyncio==0.25.0
